@@ -112,6 +112,20 @@ sealed abstract class BaseAction(config: Config, childConfigs: Vector[ProjectCon
     log info s"Service URL is ${serviceUrl}"
     val service = new WhitesourceService(
       agentType, agentVersion, serviceUrl.toString, autoDetectProxySettings)
+    service.setClient(new WssServiceClient {
+      def updateInventory(request: UpdateInventoryRequest): UpdateInventoryResult = new UpdateInventoryResult
+      def checkPolicies(request: CheckPoliciesRequest): CheckPoliciesResult = new CheckPoliciesResult
+      def checkPolicyCompliance(request: CheckPolicyComplianceRequest): CheckPolicyComplianceResult = new CheckPolicyComplianceResult
+      def getDependencyData(request: GetDependencyDataRequest): GetDependencyDataResult = new GetDependencyDataResult
+      def summaryScan(request: SummaryScanRequest): SummaryScanResult = new SummaryScanResult
+      def checkVulnerabilities(request: CheckVulnerabilitiesRequest): CheckVulnerabilitiesResult = new CheckVulnerabilitiesResult
+      def getConfiguration(request: ConfigurationRequest): ConfigurationResult = new ConfigurationResult
+
+      def shutdown(): Unit = ()
+      def setProxy(host: String, port: Int, username: String, password: String): Unit = ()
+      def setConnectionTimeout(timeout: Int): Unit = ()
+
+    })
     log info "Initiated WhiteSource Service"
     service
   }
@@ -270,7 +284,7 @@ sealed abstract class BaseAction(config: Config, childConfigs: Vector[ProjectCon
     info setType m.artifactAndJar.map(_._1.`type`).orNull
     try {
       info setSystemPath m.artifactAndJar.map(_._2.getAbsolutePath).orNull
-      info setSha1 m.artifactAndJar.map(ChecksumUtils calculateSHA1 _._2).orNull
+//      info setSha1 m.artifactAndJar.map(ChecksumUtils calculateSHA1 _._2).orNull
     } catch {
       case _: IOException => log debug s"Error calculating SHA-1 for $m"
     }
